@@ -146,26 +146,31 @@ HEADER
         printf '\n# [%s]\n' "$section"
         if [ "$is_first" = 1 ]; then
             cat <<'HELPERS'
+# helpers は section-init で 1 度だけ定義し、 builtins に貼って他 section から呼べるようにする。
+# 第 2 引数 g は呼び出し元 (各 section の exec 文脈) の globals を渡してもらう。
+# config.py 側が dict(globals(), **locals()) を exec の名前空間にしているので、
+# その dict には configure() の現在の locals (is_japanese_keyboard 等) も入っている。
+# それを使って upstream / user 設定を exec しないと late-bound な名前が解決できない。
 import re as _re, builtins as _b, os.path as _p
-def _fmx_upstream(s):
+def _fmx_upstream(s, g):
     path = _p.join(dataPath(), "_config_personal.py")
     if not _p.exists(path): return
     with open(path, encoding="utf-8-sig") as f: src = f.read()
     m = _re.search(rf"(#\s\[{_re.escape(s)}\].*?)(#\s\[section-|\Z)", src, _re.DOTALL)
-    if m: exec(m.group(1), globals())
-def _fmx_custom(s):
+    if m: exec(m.group(1), g)
+def _fmx_custom(s, g):
     stripped = s[len("section-"):] if s.startswith("section-") else s
     path = _p.expanduser("~/.fakeymacs/" + stripped + ".py")
     if not _p.exists(path): return
     with open(path, encoding="utf-8-sig") as f: src = f.read()
-    exec(src, globals())
+    exec(src, g)
 _b._fmx_upstream = _fmx_upstream
 _b._fmx_custom   = _fmx_custom
 HELPERS
             is_first=0
         fi
-        printf '_fmx_upstream("%s")\n' "$section"
-        printf '_fmx_custom("%s")\n'   "$section"
+        printf '_fmx_upstream("%s", globals())\n' "$section"
+        printf '_fmx_custom("%s", globals())\n'   "$section"
     done <<< "$sections"
 }
 
