@@ -134,11 +134,8 @@ generate_loader() {
 # このファイルは fakeymacs 本体が読む config_personal.py。 中身は実行時に
 # 次の場所を読みに行く薄い委譲コードだけ:
 #
-#   ~/.fakeymacs/<name>.py       : [section-<name>] の差し込みコード
-#                                  (例: ~/.fakeymacs/options.py → [section-options])
-#   ~/.fakeymacs/apps/<name>.py  : アプリ別キーマップ (section-base-2 で自動 exec)
-#                                  ファイル中では keymap_<name> 変数が使える
-#                                  (内部で keymap.defineWindowKeymap(exe_name="<name>.exe") される)
+#   ~/.fakeymacs/<name>.py   : [section-<name>] の差し込みコード
+#                              (例: ~/.fakeymacs/options.py → [section-options])
 #
 # 該当ファイルが無い場合は何もしない (silent skip)。
 
@@ -149,7 +146,7 @@ HEADER
         printf '\n# [%s]\n' "$section"
         if [ "$is_first" = 1 ]; then
             cat <<'HELPERS'
-import re as _re, builtins as _b, os as _os, os.path as _p
+import re as _re, builtins as _b, os.path as _p
 def _fmx_upstream(s):
     path = _p.join(dataPath(), "_config_personal.py")
     if not _p.exists(path): return
@@ -162,26 +159,13 @@ def _fmx_custom(s):
     if not _p.exists(path): return
     with open(path, encoding="utf-8-sig") as f: src = f.read()
     exec(src, globals())
-def _fmx_apps():
-    apps_dir = _p.expanduser("~/.fakeymacs/apps")
-    if not _p.isdir(apps_dir): return
-    for f in sorted(_os.listdir(apps_dir)):
-        if not f.endswith(".py") or f.startswith("_"): continue
-        name = f[:-3]
-        globals()[f"keymap_{name}"] = keymap.defineWindowKeymap(exe_name=name + ".exe")
-        with open(_p.join(apps_dir, f), encoding="utf-8-sig") as file: src = file.read()
-        exec(src, globals())
 _b._fmx_upstream = _fmx_upstream
 _b._fmx_custom   = _fmx_custom
-_b._fmx_apps     = _fmx_apps
 HELPERS
             is_first=0
         fi
         printf '_fmx_upstream("%s")\n' "$section"
         printf '_fmx_custom("%s")\n'   "$section"
-        if [ "$section" = "section-base-2" ]; then
-            printf '_fmx_apps()\n'
-        fi
     done <<< "$sections"
 }
 
@@ -197,6 +181,5 @@ install_overwrite "$TMP_LOADER" "config_personal.py"
 log "===== install complete ====="
 log ""
 log "編集対象 (ユーザ環境):"
-log "  ~/.fakeymacs/<section-name>.py   (section 単位の差し込み)"
-log "  ~/.fakeymacs/apps/<name>.py      (アプリ別キーマップ)"
+log "  ~/.fakeymacs/<section-name>.py   (例: options.py, base-2.py)"
 log "ディレクトリ無し / ファイル無しなら何もしない (upstream defaults だけで動く)。"

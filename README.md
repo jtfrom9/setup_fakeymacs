@@ -41,9 +41,7 @@ cd setup_fakeymacs
 
 独自設定は `~/.fakeymacs/` 配下に Python ファイルとして置きます。 ディレクトリやファイルが無ければ何もしないので、 「必要なものだけ作る」運用ができます。
 
-### `~/.fakeymacs/<name>.py` — section 単位の差し込み
-
-fakeymacs の `config.py` は起動シーケンスの各タイミングで `[section-XXX]` という名前付きのフックを exec します。 そのうちの `<name>` (例: `init`, `options`, `base-2`) に当たる Python ファイルを置けば、 upstream のサンプル設定 (`_config_personal.py`) のあとに追加で exec されます。
+fakeymacs の `config.py` は起動シーケンスの各タイミングで `[section-XXX]` という名前付きのフックを exec します。 そのうちの `<name>` (例: `init`, `options`, `base-2`) に当たる Python ファイルを `~/.fakeymacs/<name>.py` として置けば、 upstream のサンプル設定 (`_config_personal.py`) のあとに追加で exec されます。
 
 ```python
 # ~/.fakeymacs/options.py
@@ -51,28 +49,20 @@ fc.debug = True
 fc.ime   = "Google_IME"
 ```
 
+アプリ別のキーマップは、 fakeymacs の `keymap.defineWindowKeymap` を直接使って `~/.fakeymacs/base-2.py` の中で定義するのが定石です。
+
 ```python
 # ~/.fakeymacs/base-2.py
-keymap_global["A-x"] = "C-x"
+keymap_chrome = keymap.defineWindowKeymap(exe_name="chrome.exe")
+keymap_chrome["A-T"] = "C-T"
+keymap_chrome["A-W"] = "C-W"
+
+keymap_vscode = keymap.defineWindowKeymap(exe_name="Code.exe")
+keymap_vscode["A-X"] = "C-S-P"
 ```
 
 利用可能な section 名 (現バージョンの upstream `config.py` から):
 `init`, `options`, `base-1`, `base-2`, `clipboardList-1`, `clipboardList-2`, `lancherList-1`, `lancherList-2`, `extensions`, `extension-space_fn`, `extension-capslock_key`
-
-### `~/.fakeymacs/apps/<name>.py` — アプリ別キーマップ
-
-ファイル名 `<name>` をプロセス名 `<name>.exe` のアプリにマップする window 別 keymap が自動的に用意され、 `keymap_<name>` という変数名でファイル内から触れます。 内部的には section-base-2 のタイミングで exec されます。
-
-```python
-# ~/.fakeymacs/apps/chrome.py
-keymap_chrome["A-T"] = "C-T"
-keymap_chrome["A-W"] = "C-W"
-```
-
-```python
-# ~/.fakeymacs/apps/Code.py        ← VSCode (process: Code.exe)
-keymap_Code["A-X"] = "C-S-P"
-```
 
 ## その他のスクリプト
 
