@@ -23,6 +23,8 @@
 #   2. Resolve target dir = "<PARENT_DIR>/fakeymacs" (created if missing).
 #   3. If <target>/keyhac.exe does not exist, download Keyhac zip and extract.
 #   4. Run <repo>/install.sh <target>.
+#   5. Register Windows logon auto-start (HKCU Run key → <target>/keyhac.bat).
+#      Skip step 5 by setting SKIP_AUTOSTART=1.
 
 set -euo pipefail
 
@@ -100,5 +102,12 @@ else
     git clone --depth 1 "$REPO_URL" "$REPO_DEST"
 fi
 
-# install.sh 起動 (exec で置き換え、 終了コードを propagate)
-exec "$REPO_DEST/install.sh" "$KEYHAC_DIR"
+# install.sh 起動
+"$REPO_DEST/install.sh" "$KEYHAC_DIR"
+
+# Windows ログオン時の自動起動を登録 (Registry Run キー経由)
+if [ "${SKIP_AUTOSTART:-}" = "1" ]; then
+    echo "INFO: SKIP_AUTOSTART=1 のため自動起動登録をスキップしました。"
+else
+    "$REPO_DEST/setup_autostart.sh" "$KEYHAC_DIR"
+fi
