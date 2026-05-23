@@ -161,7 +161,10 @@ def _fmx_upstream(s, g):
 def _fmx_custom(s, g):
     stripped = s[len("section-"):] if s.startswith("section-") else s
     path = _p.expanduser("~/.fakeymacs/" + stripped + ".py")
-    if not _p.exists(path): return
+    if not _p.exists(path):
+        print(f"[~/.fakeymacs/{stripped}.py] not found")
+        return
+    print(f"[~/.fakeymacs/{stripped}.py] loaded")
     with open(path, encoding="utf-8-sig") as f: src = f.read()
     exec(src, g)
 _b._fmx_upstream = _fmx_upstream
