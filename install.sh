@@ -135,9 +135,11 @@ generate_loader() {
 # 次の場所を読みに行く薄い委譲コードだけ:
 #
 #   ~/.fakeymacs/<name>.py   : [section-<name>] の差し込みコード
-#                              (例: ~/.fakeymacs/options.py → [section-options])
+#                              (例: options.py → [section-options])
 #
-# 該当ファイルが無い場合は何もしない (silent skip)。
+# ~ は環境変数 $HOME を優先して解決する (MSYS /c/foo は C:/foo に変換)。
+# $HOME 未設定なら Python の expanduser("~") にフォールバック。
+# ファイル無しなら何もしない (silent skip)。 ログには loaded / not found のいずれかが出る。
 
 HEADER
 
@@ -151,7 +153,14 @@ HEADER
 # config.py 側が dict(globals(), **locals()) を exec の名前空間にしているので、
 # その dict には configure() の現在の locals (is_japanese_keyboard 等) も入っている。
 # それを使って upstream / user 設定を exec しないと late-bound な名前が解決できない。
-import re as _re, builtins as _b, os.path as _p
+import re as _re, builtins as _b, os as _os, os.path as _p
+def _user_home():
+    h = _os.environ.get("HOME") or ""
+    # MSYS-style /c/foo → C:/foo に変換 (Python on Windows は /c/... を解釈できない)
+    if len(h) >= 3 and h[0] == "/" and h[2] == "/" and h[1].isalpha():
+        h = h[1].upper() + ":" + h[2:]
+    return h or _p.expanduser("~")
+_USER_HOME = _user_home()
 def _fmx_upstream(s, g):
     path = _p.join(dataPath(), "_config_personal.py")
     if not _p.exists(path): return
@@ -160,7 +169,7 @@ def _fmx_upstream(s, g):
     if m: exec(m.group(1), g)
 def _fmx_custom(s, g):
     stripped = s[len("section-"):] if s.startswith("section-") else s
-    path = _p.expanduser("~/.fakeymacs/" + stripped + ".py")
+    path = _p.join(_USER_HOME, ".fakeymacs", stripped + ".py")
     if not _p.exists(path):
         print(f"[~/.fakeymacs/{stripped}.py] not found")
         return
