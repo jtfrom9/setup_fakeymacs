@@ -11,35 +11,24 @@
 
 - Keyhac 本体と fakeymacs 一式を 1 コマンドで取得・配置する
 - fakeymacs の upstream サンプル設定 (`_config_personal.py`) をそのまま読み込んで base 設定とする
-- 上に重ねる**ユーザ固有のカスタマイズ**は `~/.fakeymacs/` 配下で管理する (リポジトリ外、 環境ごと)
+- 上に重ねる**ユーザ固有のカスタマイズ**は `%USERPROFILE%\.fakeymacs\` 配下で管理する (リポジトリ外、 環境ごと)
 
 ## インストール
-
-git-bash で 1 行:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/jtfrom9/setup_fakeymacs/main/bootstrap.sh | bash
 ```
 
-引数省略時は **`%LOCALAPPDATA%\fakeymacs\`** (= `C:\Users\<user>\AppData\Local\fakeymacs\`、 npm の `%APPDATA%\npm\` 流) に展開されます。 場所を変えたいなら:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/jtfrom9/setup_fakeymacs/main/bootstrap.sh \
-  | bash -s -- <PARENT_DIR>
-```
-
-で `<PARENT_DIR>/fakeymacs/` に作られます (`.` でカレント)。 中身は Keyhac (v1.83) + fakeymacs + 生成 `config_personal.py`。 起動は `<install先>/fakeymacs/keyhac.bat`。
-
 ## カスタマイズ
 
-`~/.fakeymacs/<section-name>.py` を作れば、 fakeymacs の `[section-<name>]` で exec されます (= upstream のサンプル設定のあとに追加で適用される)。 例:
+`%USERPROFILE%\.fakeymacs\<section-name>.py` を作れば、 fakeymacs の `[section-<name>]` で exec されます (= upstream のサンプル設定のあとに追加で適用される)。 例:
 
 ```python
-# ~/.fakeymacs/options.py
+# %USERPROFILE%\.fakeymacs\options.py
 fc.debug = True
 fc.ime   = "Google_IME"
 
-# ~/.fakeymacs/base-2.py
+# %USERPROFILE%\.fakeymacs\base-2.py
 keymap_chrome = keymap.defineWindowKeymap(exe_name="chrome.exe")
 keymap_chrome["A-T"] = "C-T"
 ```
