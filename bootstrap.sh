@@ -11,16 +11,21 @@
 #                           (default: https://github.com/jtfrom9/setup_fakeymacs.git)
 #   SETUP_FAKEYMACS_DEST  — local clone destination
 #                           (default: $HOME/setup_fakeymacs)
+#   KEYHAC_ZIP_URL        — Keyhac binary zip URL (auto-download if KEYHAC_DIR
+#                           does not already contain keyhac.exe)
+#                           (default: crftwr/keyhac-win v1.83 release asset)
 #
 # What it does:
 #   1. If $SETUP_FAKEYMACS_DEST does not exist, git clone the repo there.
-#   2. Run <repo>/install.sh <KEYHAC_DIR>.
-#   Existing repo dir is left as-is; update manually with `git pull` if needed.
+#   2. If <KEYHAC_DIR>/keyhac.exe does not exist, download Keyhac zip and
+#      extract its contents into <KEYHAC_DIR>.
+#   3. Run <repo>/install.sh <KEYHAC_DIR>.
 
 set -euo pipefail
 
 REPO_URL="${SETUP_FAKEYMACS_REPO:-https://github.com/jtfrom9/setup_fakeymacs.git}"
 REPO_DEST="${SETUP_FAKEYMACS_DEST:-$HOME/setup_fakeymacs}"
+KEYHAC_ZIP_URL="${KEYHAC_ZIP_URL:-https://github.com/crftwr/keyhac-win/releases/download/v1.83/keyhac_183.zip}"
 
 if [ $# -lt 1 ] || [ -z "${1:-}" ]; then
     cat >&2 <<USAGE
@@ -28,7 +33,8 @@ Usage:
   curl -fsSL https://raw.githubusercontent.com/jtfrom9/setup_fakeymacs/main/bootstrap.sh \\
     | bash -s -- <KEYHAC_DIR>
 
-  <KEYHAC_DIR>  : keyhac.exe を含むディレクトリの絶対パス
+  <KEYHAC_DIR>  : keyhac.exe を置くディレクトリの絶対パス
+                  (既存に keyhac.exe が無ければ Keyhac zip を自動 download)
 USAGE
     exit 2
 fi
@@ -42,10 +48,29 @@ for cmd in git curl unzip; do
     fi
 done
 
-# ターゲット軽く検証 (詳細チェックは install.sh が行う)
-if [ ! -f "$KEYHAC_DIR/keyhac.exe" ]; then
-    echo "ERROR: keyhac.exe not found in $KEYHAC_DIR" >&2
-    exit 1
+# Keyhac 取得 (無ければ download → extract)
+if [ -f "$KEYHAC_DIR/keyhac.exe" ]; then
+    echo "INFO: keyhac.exe already exists at $KEYHAC_DIR; skipping Keyhac download."
+else
+    echo "Downloading Keyhac from $KEYHAC_ZIP_URL ..."
+    tmpdir="$(mktemp -d -t keyhac-download-XXXXXX)"
+    trap 'rm -rf "$tmpdir"' EXIT
+    if ! curl -fsSL -o "$tmpdir/keyhac.zip" "$KEYHAC_ZIP_URL"; then
+        echo "ERROR: Keyhac download failed: $KEYHAC_ZIP_URL" >&2
+        exit 1
+    fi
+    if ! unzip -q "$tmpdir/keyhac.zip" -d "$tmpdir/extract"; then
+        echo "ERROR: Keyhac zip extract failed" >&2
+        exit 1
+    fi
+    # zip 内構造は keyhac/keyhac.exe 等。 中身を KEYHAC_DIR に展開する。
+    src="$tmpdir/extract/keyhac"
+    [ -f "$src/keyhac.exe" ] || { echo "ERROR: unexpected zip layout (no keyhac/keyhac.exe)" >&2; exit 1; }
+    mkdir -p "$KEYHAC_DIR"
+    cp -rT "$src" "$KEYHAC_DIR"
+    rm -rf "$tmpdir"
+    trap - EXIT
+    echo "INFO: Keyhac installed at $KEYHAC_DIR"
 fi
 
 # リポジトリ取得
