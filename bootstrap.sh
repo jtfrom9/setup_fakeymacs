@@ -68,30 +68,40 @@ for cmd in git curl unzip; do
     fi
 done
 
-# Keyhac 取得 (無ければ download → extract)
-if [ -f "$KEYHAC_DIR/keyhac.exe" ]; then
-    echo "INFO: keyhac.exe already exists at $KEYHAC_DIR; skipping Keyhac download."
-else
-    echo "Downloading Keyhac from $KEYHAC_ZIP_URL ..."
-    tmpdir="$(mktemp -d -t keyhac-download-XXXXXX)"
-    trap 'rm -rf "$tmpdir"' EXIT
-    if ! curl -fsSL -o "$tmpdir/keyhac.zip" "$KEYHAC_ZIP_URL"; then
-        echo "ERROR: Keyhac download failed: $KEYHAC_ZIP_URL" >&2
-        exit 1
-    fi
-    if ! unzip -q "$tmpdir/keyhac.zip" -d "$tmpdir/extract"; then
-        echo "ERROR: Keyhac zip extract failed" >&2
-        exit 1
-    fi
-    # zip 内構造は keyhac/keyhac.exe 等。 中身を KEYHAC_DIR に展開する。
-    src="$tmpdir/extract/keyhac"
-    [ -f "$src/keyhac.exe" ] || { echo "ERROR: unexpected zip layout (no keyhac/keyhac.exe)" >&2; exit 1; }
-    mkdir -p "$KEYHAC_DIR"
-    cp -rT "$src" "$KEYHAC_DIR"
-    rm -rf "$tmpdir"
-    trap - EXIT
-    echo "INFO: Keyhac installed at $KEYHAC_DIR"
+# install 先が既に存在したら error で止める (誤って上書き / 混在しないように)
+if [ -e "$KEYHAC_DIR" ]; then
+    cat >&2 <<MSG
+ERROR: install 先 "$KEYHAC_DIR" が既に存在します。
+
+先に削除してから再実行してください:
+  rm -rf "$KEYHAC_DIR"
+
+  (autostart の Registry エントリを削除する場合:
+     reg.exe delete "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run" /v Keyhac /f )
+MSG
+    exit 1
 fi
+
+# Keyhac を download → extract
+echo "Downloading Keyhac from $KEYHAC_ZIP_URL ..."
+tmpdir="$(mktemp -d -t keyhac-download-XXXXXX)"
+trap 'rm -rf "$tmpdir"' EXIT
+if ! curl -fsSL -o "$tmpdir/keyhac.zip" "$KEYHAC_ZIP_URL"; then
+    echo "ERROR: Keyhac download failed: $KEYHAC_ZIP_URL" >&2
+    exit 1
+fi
+if ! unzip -q "$tmpdir/keyhac.zip" -d "$tmpdir/extract"; then
+    echo "ERROR: Keyhac zip extract failed" >&2
+    exit 1
+fi
+# zip 内構造は keyhac/keyhac.exe 等。 中身を KEYHAC_DIR に展開する。
+src="$tmpdir/extract/keyhac"
+[ -f "$src/keyhac.exe" ] || { echo "ERROR: unexpected zip layout (no keyhac/keyhac.exe)" >&2; exit 1; }
+mkdir -p "$KEYHAC_DIR"
+cp -rT "$src" "$KEYHAC_DIR"
+rm -rf "$tmpdir"
+trap - EXIT
+echo "INFO: Keyhac installed at $KEYHAC_DIR"
 
 # リポジトリ取得
 if [ -d "$REPO_DEST" ]; then
