@@ -2,12 +2,6 @@
 
 Bash scripts to install [smzht/fakeymacs](https://github.com/smzht/fakeymacs) into a [Keyhac](https://sites.google.com/site/craftware/keyhac-ja) (Windows) install, while keeping personal customizations separate from upstream via an overlay file.
 
-## Requirements
-
-- Windows
-- An existing Keyhac install (download from the craftware site)
-- git-bash / MSYS
-
 ## Scripts
 
 All scripts take the absolute path to your Keyhac install directory (the one containing `keyhac.exe`) as the first argument.
@@ -22,7 +16,7 @@ Clones upstream fakeymacs, deploys it on top of the Keyhac install, and generate
 The loader does **not** embed upstream content — it reads `_config_personal.py` at runtime — so upstream sample updates flow through automatically with no repo edits.
 
 ```bash
-./install.sh /c/path/to/keyhac
+./install.sh <KEYHAC_DIR>
 ```
 
 Existing files are backed up to `.bak.<TS>` before being overwritten. The full action log is appended to `<KEYHAC_DIR>/install_fakeymacs.log`.
@@ -32,7 +26,7 @@ Existing files are backed up to `.bak.<TS>` before being overwritten. The full a
 Reverts the Keyhac install to vanilla state. Moves fakeymacs-deployed files, backups, and rogue extension dirs misplaced at the Keyhac root to `_uninstalled.<TS>/` (does not `rm`).
 
 ```bash
-./clean.sh /c/path/to/keyhac
+./clean.sh <KEYHAC_DIR>
 ```
 
 ### `setup_autostart.sh`
@@ -40,7 +34,7 @@ Reverts the Keyhac install to vanilla state. Moves fakeymacs-deployed files, bac
 Registers Keyhac for Windows logon auto-start by adding an entry under `HKCU\Software\Microsoft\Windows\CurrentVersion\Run` that launches `keyhac.bat` (preserves the `/high` priority flag).
 
 ```bash
-./setup_autostart.sh /c/path/to/keyhac
+./setup_autostart.sh <KEYHAC_DIR>
 ```
 
 ## Customization
@@ -59,16 +53,6 @@ keymap_global["A-t"] = "C-t"
 These values are exec'd **after** upstream's same section, so they override upstream sample defaults.
 
 The list of valid section names comes from the `readConfigPersonal("[section-...]")` calls in upstream's `config.py`. `install.sh` extracts them at install time and generates the matching loader stubs — if upstream adds a new section, just re-run `install.sh`.
-
-## Repository layout
-
-```
-install.sh              # install upstream + generate loader
-clean.sh                # uninstall, move everything to _uninstalled.<TS>/
-setup_autostart.sh      # register Keyhac in Windows Run key
-overlay/
-  config_personal_custom.py   # your custom fakeymacs settings (section-aware)
-```
 
 ## License
 
