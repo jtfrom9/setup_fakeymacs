@@ -7,23 +7,38 @@
 keymap_base["D-LAlt"] = "D-LAlt", "(255)"
 keymap_base["D-RAlt"] = "D-RAlt", "(255)"
 
-# Chrome / VSCode 共通: Alt 系を Ctrl 系に
+# ============================================================
+# 全アプリ共通 (keymap_global)
+# ============================================================
+
+# Alt 系を Ctrl 系に (Chrome / VSCode 等で Mac風ショートカットを使えるように)
 define_key(keymap_global, "A-t", self_insert_command("C-t"))    # new tab
 define_key(keymap_global, "A-w", self_insert_command("C-w"))    # close tab
 define_key(keymap_global, "A-z", self_insert_command("C-z"))    # undo
 
-# Chrome
-define_key(keymap_global, "A-n",   self_insert_command("C-n"))    # new window
-define_key(keymap_global, "A-r",   self_insert_command("S-F5"))   # reload
-define_key(keymap_global, "S-A-n", self_insert_command("C-S-n"))  # open secret tab
-define_key(keymap_global, "A-l",   self_insert_command("C-l"))    # address bar
-define_key(keymap_global, "A-d",   self_insert_command("C-d"))    # add bookmark
-
-# VSCode
-define_key(keymap_global, "A-,", self_insert_command("C-,"))  # open settings
-
-# Emacs モード: C-u を PageUp に
-define_key(keymap_emacs, "C-u", self_insert_command("PageUp"))
+# A-q でアプリを閉じる (Alt+F4)
+define_key(keymap_global, "A-q", self_insert_command("A-F4"))
 
 # Windows: タスクビュー (Shift+Ctrl+8 → Win+Tab)
 define_key(keymap_global, "S-C-8", self_insert_command("LWin-Tab"))
+
+# ============================================================
+# Chrome 専用
+# ============================================================
+keymap_chrome = keymap.defineWindowKeymap(exe_name="chrome.exe")
+keymap_chrome["A-n"]   = "C-n"      # new window
+keymap_chrome["A-r"]   = "S-F5"     # reload
+keymap_chrome["S-A-n"] = "C-S-n"    # open secret tab
+keymap_chrome["A-l"]   = "C-l"      # address bar
+keymap_chrome["A-d"]   = "C-d"      # add bookmark
+
+# ============================================================
+# VSCode 専用
+# ============================================================
+keymap_vscode = keymap.defineWindowKeymap(exe_name="Code.exe")
+keymap_vscode["A-,"] = "C-,"        # open settings
+
+# ============================================================
+# Emacs モード (keymap_emacs)
+# ============================================================
+define_key(keymap_emacs, "C-u", self_insert_command("PageUp"))
