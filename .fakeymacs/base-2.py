@@ -19,6 +19,9 @@ define_key(keymap_global, "A-z", self_insert_command("C-z"))    # undo
 # A-q でアプリを閉じる (Alt+F4)
 define_key(keymap_global, "A-q", self_insert_command("A-F4"))
 
+# A-, で設定を開く (VSCode の Ctrl+, を Mac風に)
+define_key(keymap_global, "A-,", self_insert_command("C-,"))
+
 # Windows: タスクビュー (Shift+Ctrl+8 → Win+Tab)
 define_key(keymap_global, "S-C-8", self_insert_command("LWin-Tab"))
 
@@ -31,12 +34,6 @@ keymap_chrome["A-r"]   = "S-F5"     # reload
 keymap_chrome["S-A-n"] = "C-S-n"    # open secret tab
 keymap_chrome["A-l"]   = "C-l"      # address bar
 keymap_chrome["A-d"]   = "C-d"      # add bookmark
-
-# ============================================================
-# VSCode 専用
-# ============================================================
-keymap_vscode = keymap.defineWindowKeymap(exe_name="Code.exe")
-keymap_vscode["A-,"] = "C-,"        # open settings
 
 # ============================================================
 # Emacs モード (keymap_emacs)
