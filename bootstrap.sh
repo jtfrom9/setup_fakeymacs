@@ -3,8 +3,11 @@
 # bootstrap.sh — One-liner setup_fakeymacs installer.
 #
 # Usage:
+#   curl -fsSL https://raw.githubusercontent.com/jtfrom9/setup_fakeymacs/main/bootstrap.sh | bash
+#     → install to %LOCALAPPDATA%\fakeymacs (default)
 #   curl -fsSL https://raw.githubusercontent.com/jtfrom9/setup_fakeymacs/main/bootstrap.sh \
-#     | bash -s -- <KEYHAC_DIR>
+#     | bash -s -- <PARENT_DIR>
+#     → install to <PARENT_DIR>\fakeymacs
 #
 # Environment overrides:
 #   SETUP_FAKEYMACS_REPO  — git URL of the setup_fakeymacs repo
@@ -27,18 +30,30 @@ REPO_URL="${SETUP_FAKEYMACS_REPO:-https://github.com/jtfrom9/setup_fakeymacs.git
 REPO_DEST="${SETUP_FAKEYMACS_DEST:-$HOME/setup_fakeymacs}"
 KEYHAC_ZIP_URL="${KEYHAC_ZIP_URL:-https://github.com/crftwr/keyhac-win/releases/download/v1.83/keyhac_183.zip}"
 
-if [ $# -lt 1 ] || [ -z "${1:-}" ]; then
-    cat >&2 <<USAGE
-Usage:
+PARENT_DIR_ARG="${1:-}"
+if [ -z "$PARENT_DIR_ARG" ]; then
+    # 引数省略時のデフォルト: %LOCALAPPDATA% (= AppData\Local)
+    # → 結果として install 先は %LOCALAPPDATA%\fakeymacs\
+    # (npm の %APPDATA%\npm\ と同じく AppData 直下 1 階層に置く。
+    #  Keyhac はバイナリなので Roaming ではなく Local 側を選択)
+    if [ -n "${LOCALAPPDATA:-}" ]; then
+        PARENT_DIR_ARG="$(cygpath -u "$LOCALAPPDATA")"
+    elif [ -n "${USERPROFILE:-}" ]; then
+        PARENT_DIR_ARG="$(cygpath -u "$USERPROFILE")/AppData/Local"
+    else
+        cat >&2 <<USAGE
+ERROR: LOCALAPPDATA / USERPROFILE が未設定でデフォルトの install 先を決定できません。
+明示する場合:
   curl -fsSL https://raw.githubusercontent.com/jtfrom9/setup_fakeymacs/main/bootstrap.sh \\
     | bash -s -- <PARENT_DIR>
 
-  <PARENT_DIR>  : 直下に "fakeymacs/" を作ってそこに Keyhac 一式 + fakeymacs +
-                  生成 config_personal.py を展開する。 "." を渡せばカレントに作る。
+  <PARENT_DIR>  : 直下に "fakeymacs/" を作ってそこに Keyhac + fakeymacs +
+                  生成 config_personal.py を展開する。 "." はカレント。
 USAGE
-    exit 2
+        exit 2
+    fi
+    echo "INFO: <PARENT_DIR> 未指定。 デフォルト $PARENT_DIR_ARG/fakeymacs/ に install します。"
 fi
-PARENT_DIR_ARG="$1"
 mkdir -p "$PARENT_DIR_ARG"
 PARENT_DIR="$(cd "$PARENT_DIR_ARG" && pwd)"
 KEYHAC_DIR="$PARENT_DIR/fakeymacs"

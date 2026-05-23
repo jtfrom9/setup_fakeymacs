@@ -18,11 +18,17 @@
 git-bash で 1 行:
 
 ```bash
+curl -fsSL https://raw.githubusercontent.com/jtfrom9/setup_fakeymacs/main/bootstrap.sh | bash
+```
+
+引数省略時は **`%LOCALAPPDATA%\fakeymacs\`** (= `C:\Users\<user>\AppData\Local\fakeymacs\`、 npm の `%APPDATA%\npm\` 流) に展開されます。 場所を変えたいなら:
+
+```bash
 curl -fsSL https://raw.githubusercontent.com/jtfrom9/setup_fakeymacs/main/bootstrap.sh \
   | bash -s -- <PARENT_DIR>
 ```
 
-`<PARENT_DIR>` の直下に `fakeymacs/` フォルダが作られ、 そこに Keyhac (v1.83) + fakeymacs + 生成 `config_personal.py` がまとめて展開されます。 カレントに作るなら `.`。 起動は `<PARENT_DIR>/fakeymacs/keyhac.bat`。
+で `<PARENT_DIR>/fakeymacs/` に作られます (`.` でカレント)。 中身は Keyhac (v1.83) + fakeymacs + 生成 `config_personal.py`。 起動は `<install先>/fakeymacs/keyhac.bat`。
 
 ## カスタマイズ
 
