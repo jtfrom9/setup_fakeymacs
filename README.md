@@ -4,38 +4,40 @@ Windows 用 Keyhac に [smzht/fakeymacs](https://github.com/smzht/fakeymacs) を
 
 ## インストール
 
-事前に [Keyhac](https://sites.google.com/site/craftware/keyhac-ja) をインストールしておきます。 Keyhac は zip 配布なので任意の場所に展開すれば設置完了です。 以下「Keyhac のインストール先」とは `keyhac.exe` が置かれているディレクトリの絶対パスを指します。
-
 ### One-liner (推奨)
 
-git-bash で次を実行するだけ。 内部で本リポジトリを `~/setup_fakeymacs` に clone してから `install.sh` を叩きます。
+git-bash で次の 1 行:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/jtfrom9/setup_fakeymacs/main/bootstrap.sh \
-  | bash -s -- <KEYHAC_DIR>
+  | bash -s -- <PARENT_DIR>
 ```
 
-既に `~/setup_fakeymacs` がある場合はそれを使います (上書きしない)。 更新したい場合は `cd ~/setup_fakeymacs && git pull` してから手動で `./install.sh <KEYHAC_DIR>` してください。
+`<PARENT_DIR>` の直下に `fakeymacs/` というフォルダが作られ、 そこに **Keyhac 本体一式**、 **fakeymacs**、 生成された **`config_personal.py`** がまとめて展開されます。 `.` を渡せばカレントディレクトリに作ります。
 
-### 手動
+`bootstrap.sh` は内部で次を順に行います。
 
-リポジトリを clone した上で `install.sh` を実行します。
+1. `~/setup_fakeymacs` に本リポジトリを `git clone` (既存ならそのまま使う)
+2. `<PARENT_DIR>/fakeymacs/keyhac.exe` が無ければ [crftwr/keyhac-win](https://github.com/crftwr/keyhac-win) の v1.83 release zip を取得して `<PARENT_DIR>/fakeymacs/` に展開
+3. clone した repo の `install.sh <PARENT_DIR>/fakeymacs` を起動
+
+### `install.sh` を直接叩く
+
+すでに repo を clone してある or Keyhac を別途準備した、 上級者向け:
 
 ```bash
-git clone https://github.com/jtfrom9/setup_fakeymacs.git
-cd setup_fakeymacs
 ./install.sh <KEYHAC_DIR>
 ```
 
-### `install.sh` の挙動
+`install.sh` は内部で次を行います。
 
 1. [smzht/fakeymacs](https://github.com/smzht/fakeymacs) の master ブランチを `.zip` で GitHub から取得して一時ディレクトリに展開する
-2. fakeymacs 本体一式 (`config.py`、 `fakeymacs_extensions/`、 `keyhac.bat`、 サンプル設定 `_config_personal.py` / `_config_parameter.py`) を Keyhac のインストール先に配置する
+2. fakeymacs 本体一式 (`config.py`、 `fakeymacs_extensions/`、 `keyhac.bat`、 サンプル設定 `_config_personal.py` / `_config_parameter.py`) を `<KEYHAC_DIR>` に配置する
 3. `<KEYHAC_DIR>/config_personal.py` を、 ユーザの `~/.fakeymacs/` 配下を実行時に読みに行く薄い委譲ファイルとして自動生成する
 
 既存ファイルを上書きする場合はタイムスタンプ付きの `.bak.<TS>` に退避し、 全操作のログが `<KEYHAC_DIR>/install_fakeymacs.log` に記録されます。
 
-インストール後、 `<KEYHAC_DIR>/keyhac.bat` を起動すれば fakeymacs が有効になります。 この時点ではユーザ設定 (`~/.fakeymacs/`) が無くても、 upstream のサンプル defaults だけで動作します。
+インストール後、 `<PARENT_DIR>/fakeymacs/keyhac.bat` を起動すれば fakeymacs が有効になります。 この時点ではユーザ設定 (`~/.fakeymacs/`) が無くても、 upstream のサンプル defaults だけで動作します。
 
 ## カスタマイズ
 

@@ -17,9 +17,9 @@
 #
 # What it does:
 #   1. If $SETUP_FAKEYMACS_DEST does not exist, git clone the repo there.
-#   2. If <KEYHAC_DIR>/keyhac.exe does not exist, download Keyhac zip and
-#      extract its contents into <KEYHAC_DIR>.
-#   3. Run <repo>/install.sh <KEYHAC_DIR>.
+#   2. Resolve target dir = "<PARENT_DIR>/fakeymacs" (created if missing).
+#   3. If <target>/keyhac.exe does not exist, download Keyhac zip and extract.
+#   4. Run <repo>/install.sh <target>.
 
 set -euo pipefail
 
@@ -31,14 +31,17 @@ if [ $# -lt 1 ] || [ -z "${1:-}" ]; then
     cat >&2 <<USAGE
 Usage:
   curl -fsSL https://raw.githubusercontent.com/jtfrom9/setup_fakeymacs/main/bootstrap.sh \\
-    | bash -s -- <KEYHAC_DIR>
+    | bash -s -- <PARENT_DIR>
 
-  <KEYHAC_DIR>  : keyhac.exe を置くディレクトリの絶対パス
-                  (既存に keyhac.exe が無ければ Keyhac zip を自動 download)
+  <PARENT_DIR>  : 直下に "fakeymacs/" を作ってそこに Keyhac 一式 + fakeymacs +
+                  生成 config_personal.py を展開する。 "." を渡せばカレントに作る。
 USAGE
     exit 2
 fi
-KEYHAC_DIR="$1"
+PARENT_DIR_ARG="$1"
+mkdir -p "$PARENT_DIR_ARG"
+PARENT_DIR="$(cd "$PARENT_DIR_ARG" && pwd)"
+KEYHAC_DIR="$PARENT_DIR/fakeymacs"
 
 # 必要コマンドの確認
 for cmd in git curl unzip; do
