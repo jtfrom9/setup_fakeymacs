@@ -36,7 +36,7 @@ WORK_DIR=""
 # このスクリプト自身の置かれているディレクトリ (= setup_fakeymacs repo の root)
 SELF_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Python が読めるパス形式に変換 (forward slash; Windows でも有効)
-OVERLAY_PERSONAL="$(cygpath -m "$SELF_DIR")/overlay/config_personal_custom.py"
+OVERLAY_DIR="$(cygpath -m "$SELF_DIR")/overlay"
 
 cleanup() {
     if [ -n "$WORK_DIR" ] && [ -d "$WORK_DIR" ]; then
@@ -73,7 +73,7 @@ size_of() {
 log "===== fakeymacs install: ${TIMESTAMP} ====="
 log "source         : $REPO_URL"
 log "target         : $KEYHAC_DIR"
-log "overlay custom : $OVERLAY_PERSONAL"
+log "overlay dir    : $OVERLAY_DIR"
 
 # --- 2. upstream を一時ディレクトリに clone ---------------------------------
 WORK_DIR="$(mktemp -d -t fakeymacs-install-XXXXXX)"
@@ -116,7 +116,7 @@ install_overwrite "$SRC/_config_parameter.py"  "_config_parameter.py"
 # upstream config.py の readConfigPersonal("[section-XXX]") を grep して
 # 現バージョンが exec する全 section 名を抽出し、 loader を構築する。
 generate_loader() {
-    local custom_path="$1"
+    local overlay_dir="$1"
     local sections
     sections=$(grep -oE 'readConfigPersonal\("\[section-[a-zA-Z0-9_-]+\]"' "$SRC/config.py" \
                | grep -oE 'section-[a-zA-Z0-9_-]+' \
@@ -130,12 +130,12 @@ generate_loader() {
 # Regenerated on every install.sh run.
 #
 # Custom settings belong in:
-#   ${custom_path}
+#   ${overlay_dir}/<section-name>.py
 #
 # For each section that fakeymacs's config.py exec's, this loader pulls
 # and exec's, in order:
 #   1. the corresponding section from _config_personal.py (upstream pristine sample)
-#   2. the corresponding section from the overlay custom file (your additions)
+#   2. ${overlay_dir}/<section>.py (your per-section additions, if the file exists)
 # So upstream sample updates flow through automatically (the loader does NOT
 # embed upstream content — it reads _config_personal.py at runtime).
 HEADER
@@ -153,11 +153,10 @@ def _fmx_upstream(s):
     m = _re.search(rf"(#\s\[{_re.escape(s)}\].*?)(#\s\[section-|\Z)", src, _re.DOTALL)
     if m: exec(m.group(1), globals())
 def _fmx_custom(s):
-    path = r"${custom_path}"
+    path = _p.join(r"${overlay_dir}", s + ".py")
     if not _p.exists(path): return
     with open(path, encoding="utf-8-sig") as f: src = f.read()
-    m = _re.search(rf"(#\s\[{_re.escape(s)}\].*?)(#\s\[section-|\Z)", src, _re.DOTALL)
-    if m: exec(m.group(1), globals())
+    exec(src, globals())
 _b._fmx_upstream = _fmx_upstream
 _b._fmx_custom   = _fmx_custom
 HELPERS
@@ -169,7 +168,7 @@ HELPERS
 }
 
 TMP_LOADER="$WORK_DIR/config_personal.py"
-generate_loader "$OVERLAY_PERSONAL" > "$TMP_LOADER"
+generate_loader "$OVERLAY_DIR" > "$TMP_LOADER"
 
 # section 数を log に残す (生成内容の検証用)
 SECTION_COUNT=$(grep -c '^_fmx_upstream' "$TMP_LOADER")
@@ -177,7 +176,22 @@ log "generated config_personal.py loader: ${SECTION_COUNT} sections"
 
 install_overwrite "$TMP_LOADER" "config_personal.py"
 
+# --- 6. overlay/ に section 別の空ファイルを足す (既存はそのまま) -----------
+#   既存ファイル: 触らない
+#   未作成ファイル: ヘッダ 1 行だけの空ファイルとして作成。 これにより
+#                   現バージョン upstream が exec する全 section に対する
+#                   独自設定置き場がリポジトリ内で discoverable になる。
+mkdir -p "$SELF_DIR/overlay"
+while IFS= read -r section; do
+    overlay_file="$SELF_DIR/overlay/${section}.py"
+    if [ ! -e "$overlay_file" ]; then
+        printf '# fakeymacs overlay: [%s]\n' "$section" > "$overlay_file"
+        log "  created overlay : overlay/${section}.py"
+    fi
+done <<< "$(grep -oE 'readConfigPersonal\("\[section-[a-zA-Z0-9_-]+\]"' "$SRC/config.py" \
+            | grep -oE 'section-[a-zA-Z0-9_-]+' | awk '!seen[$0]++')"
+
 log "===== install complete (upstream $SRC_SHA) ====="
 log ""
 log "Customize your settings here:"
-log "  $OVERLAY_PERSONAL"
+log "  $OVERLAY_DIR/<section-name>.py"

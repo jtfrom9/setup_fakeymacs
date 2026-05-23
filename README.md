@@ -1,6 +1,6 @@
 # setup_fakeymacs
 
-Bash scripts to install [smzht/fakeymacs](https://github.com/smzht/fakeymacs) into a [Keyhac](https://sites.google.com/site/craftware/keyhac-ja) (Windows) install, while keeping personal customizations separate from upstream via an overlay file.
+Bash scripts to install [smzht/fakeymacs](https://github.com/smzht/fakeymacs) into a [Keyhac](https://sites.google.com/site/craftware/keyhac-ja) (Windows) install, while keeping personal customizations separate from upstream via per-section overlay files.
 
 ## Scripts
 
@@ -11,9 +11,11 @@ All scripts take the absolute path to your Keyhac install directory (the one con
 Clones upstream fakeymacs, deploys it on top of the Keyhac install, and generates a thin `config_personal.py` loader that, for each section fakeymacs's `config.py` exec's, pulls and exec's:
 
 1. the corresponding section from upstream's `_config_personal.py` (pristine sample)
-2. the corresponding section from your overlay (`overlay/config_personal_custom.py`)
+2. `overlay/<section-name>.py` from this repo (if it exists)
 
 The loader does **not** embed upstream content — it reads `_config_personal.py` at runtime — so upstream sample updates flow through automatically with no repo edits.
+
+Per-section overlay files for any section not already present in `overlay/` are auto-created as empty stubs on each run.
 
 ```bash
 ./install.sh <KEYHAC_DIR>
@@ -39,20 +41,20 @@ Registers Keyhac for Windows logon auto-start by adding an entry under `HKCU\Sof
 
 ## Customization
 
-Put your fakeymacs personal settings into `overlay/config_personal_custom.py`, using the same `# [section-XXX]` markers that fakeymacs uses:
+Each section that fakeymacs's `config.py` exec's has a dedicated overlay file under `overlay/`. Open the file for the section you want to extend and write plain Python; the file is exec'd as-is after upstream's same section, so values you set here override upstream sample defaults.
 
 ```python
-# [section-options]
+# overlay/section-options.py
 fc.debug = True
 fc.ime   = "Google_IME"
+```
 
-# [section-base-2]
+```python
+# overlay/section-base-2.py
 keymap_global["A-t"] = "C-t"
 ```
 
-These values are exec'd **after** upstream's same section, so they override upstream sample defaults.
-
-The list of valid section names comes from the `readConfigPersonal("[section-...]")` calls in upstream's `config.py`. `install.sh` extracts them at install time and generates the matching loader stubs — if upstream adds a new section, just re-run `install.sh`.
+The list of valid section names comes from the `readConfigPersonal("[section-...]")` calls in upstream's `config.py`. `install.sh` extracts them at install time, regenerates the loader, and creates an empty overlay stub for any new section. So when upstream adds a new section, just re-run `install.sh`.
 
 ## License
 
