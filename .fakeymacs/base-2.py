@@ -25,6 +25,12 @@ define_key(keymap_global, "A-,", self_insert_command("C-,"))
 # Windows: タスクビュー (Shift+Ctrl+8 → Win+Tab)
 define_key(keymap_global, "S-C-8", self_insert_command("LWin-Tab"))
 
+# Windows: スクリーンショット (Mac の ⌘+Shift+3/4/5 → Snipping Tool の Win+Shift+S)
+# Windows 側の入口は Win+Shift+S の 1 つだけなので 3/4/5 すべてを同じに割当て。
+define_key(keymap_global, "S-A-3", self_insert_command("LWin-S-s"))
+define_key(keymap_global, "S-A-4", self_insert_command("LWin-S-s"))
+define_key(keymap_global, "S-A-5", self_insert_command("LWin-S-s"))
+
 # ============================================================
 # Chrome 専用
 # ============================================================
