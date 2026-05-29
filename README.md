@@ -1,7 +1,7 @@
 # setup_fakeymacs
 
 [![Keyhac](https://img.shields.io/badge/Keyhac-v1.83-blue)](https://github.com/crftwr/keyhac-win/releases/tag/v1.83)
-[![fakeymacs](https://img.shields.io/github/last-commit/smzht/fakeymacs/master?label=fakeymacs%20master)](https://github.com/smzht/fakeymacs)
+[![fakeymacs](https://img.shields.io/badge/fakeymacs-master-blue)](https://github.com/smzht/fakeymacs)
 [![Platform](https://img.shields.io/badge/platform-Windows-lightgrey)](https://github.com/jtfrom9/setup_fakeymacs)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
