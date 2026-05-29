@@ -1,3 +1,10 @@
+# Windows Terminal は emacs エミュレーション対象から外す。
+# 中で tmux / emacs / claude 等が自前の C-z(prefix) / C-x 等を使うため、
+# fakeymacs が横取り・再注入すると取りこぼし ("C-z n が効きにくい") が起きる。
+# 対象外にすると素通しになり、ターミナル側のキーバインドがそのまま効く。
+# (fc.not_emacs_target は [section-base-1] で初期化されるため base-1 以降で append)
+fc.not_emacs_target += ["WindowsTerminal.exe"]
+
 # フォーカス遷移 (マウスクリック等) の直後、 Alt+chord の 1 回目が無視される
 # 問題への workaround。 Alt 押下時に VK_NONAME(255) を一緒に挿入することで、
 # Keyhac 内部の _cancelOneshotWinAlt が phantom LCtrl タップを送出する経路に
@@ -15,6 +22,7 @@ keymap_base["D-RAlt"] = "D-RAlt", "(255)"
 define_key(keymap_global, "A-t", self_insert_command("C-t"))    # new tab
 define_key(keymap_global, "A-w", self_insert_command("C-w"))    # close tab
 define_key(keymap_global, "A-z", self_insert_command("C-z"))    # undo
+define_key(keymap_global, "A-v", self_insert_command("C-v"))    # paste
 
 # A-q でアプリを閉じる (Alt+F4)
 define_key(keymap_global, "A-q", self_insert_command("A-F4"))
@@ -40,6 +48,15 @@ keymap_chrome["A-r"]   = "S-F5"     # reload
 keymap_chrome["S-A-n"] = "C-S-n"    # open secret tab
 keymap_chrome["A-l"]   = "C-l"      # address bar
 keymap_chrome["A-d"]   = "C-d"      # add bookmark
+
+# ============================================================
+# Slack 専用
+# ============================================================
+# Mac の ⌘+/⌘- (ズーム) を Alt+/Alt- に。 Plus/Minus は JIS/US 双方で
+# 動く正準名 (VK_OEM_PLUS/VK_OEM_MINUS)。
+keymap_slack = keymap.defineWindowKeymap(exe_name="slack.exe")
+keymap_slack["A-Plus"]  = "C-S-Plus"  # zoom in  (Alt-+ → C-+)
+keymap_slack["A-Minus"] = "C-Minus"   # zoom out (Alt-- → C--)
 
 # ============================================================
 # Emacs モード (keymap_emacs)
