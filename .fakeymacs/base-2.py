@@ -75,6 +75,21 @@ keymap_slack["A-Plus"]  = "C-S-Plus"  # zoom in  (Alt-+ → C-+)
 keymap_slack["A-Minus"] = "C-Minus"   # zoom out (Alt-- → C--)
 
 # ============================================================
+# WindowsTerminal 専用
+# ============================================================
+# tmux/claude 等で C-h を押すと「1 文字」ではなく「単語単位」で削除される
+# 問題への対処。 WindowsTerminal は emacs 対象外 (not_emacs_target) なので
+# fakeymacs が C-h に触れず、生の ^H (0x08) が claude まで届く。 claude や
+# Node 系 TUI は 0x08 を Ctrl+Backspace 相当=単語削除として解釈する一方、
+# 物理 Backspace が送る 0x7f (DEL) は 1 文字削除になる。
+# C-h を物理 Backspace (VK_BACK) に変換すれば WindowsTerminal は通常の
+# Backspace と同じ 0x7f を送るので 1 文字削除に揃う。
+# 注意: ターミナル内の全アプリで C-h=Backspace になる (vim/tmux のペイン
+# 移動などに C-h を使っている場合はそちらが効かなくなる)。
+keymap_wt = keymap.defineWindowKeymap(exe_name="WindowsTerminal.exe")
+keymap_wt["C-h"] = "Back"
+
+# ============================================================
 # Emacs モード (keymap_emacs)
 # ============================================================
 define_key(keymap_emacs, "C-u", self_insert_command("PageUp"))
