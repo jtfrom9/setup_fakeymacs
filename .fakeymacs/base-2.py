@@ -36,7 +36,20 @@ keymap_global["W-S-Down"]  = "W-S-Down"    # 縦方向の最大化を解除
 
 # Alt 系を Ctrl 系に (Chrome / VSCode 等で Mac風ショートカットを使えるように)
 define_key(keymap_global, "A-t", self_insert_command("C-t"))    # new tab
-define_key(keymap_global, "A-w", self_insert_command("C-w"))    # close tab
+
+# A-w: 通常は C-w (タブ/ファイルを閉じる)。 ただし VSCode は Emacs プラグインで
+# C-w が kill-region (カット) に取られていて閉じない。 そのプラグインでは Emacs の
+# kill-buffer = "C-x k" がエディタ (編集中の 1 ファイル) を閉じる操作なので、
+# VSCode のときだけ "C-x" → "k" を送る。
+# ※ VSCode 専用の window keymap で上書きしても、 keymap_global の A-w が定義順で
+#   先に発火してしまい効かない。 そのためグローバル 1 箇所で checkWindow 分岐にする。
+def close_editor_or_tab():
+    if checkWindow("Code.exe"):
+        self_insert_command("C-x", "k")()
+    else:
+        self_insert_command("C-w")()
+define_key(keymap_global, "A-w", close_editor_or_tab)  # close editor / tab
+
 define_key(keymap_global, "A-z", self_insert_command("C-z"))    # undo
 define_key(keymap_global, "A-v", self_insert_command("C-v"))    # paste
 
