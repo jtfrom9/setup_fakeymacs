@@ -68,6 +68,38 @@ define_key(keymap_global, "S-A-3", self_insert_command("LWin-S-s"))
 define_key(keymap_global, "S-A-4", self_insert_command("LWin-S-s"))
 define_key(keymap_global, "S-A-5", self_insert_command("LWin-S-s"))
 
+# Mac の ⌘@ (JIS: 同一アプリの次ウィンドウへ切替。 US 配列の ⌘` 相当) を再現。
+# keyhac の getWindowList(None, process_name) で前面アプリと同じプロセスの window
+# 一覧を取り、 並びを回転させて次/前の window を前面化する。 連続切替中はキャッシュ
+# した並びを回し、 アプリが変わる or 1.5 秒空いたら取り直す (前面化で Z オーダーが
+# 変わるため。 window_operation 拡張の windowList2 と同方式)。
+fakeymacs.saw_list = []   # same-app window list (cache)
+fakeymacs.saw_proc = ""
+fakeymacs.saw_time = 0
+def switch_same_app_window(direction):
+    def _switch():
+        proc = getProcessName()
+        now  = time.time()
+        if (fakeymacs.saw_proc != proc or now - fakeymacs.saw_time > 1.5 or
+            not fakeymacs.saw_list):
+            fakeymacs.saw_list = getWindowList(None, proc)
+            fakeymacs.saw_proc = proc
+        fakeymacs.saw_time = now
+        wl = fakeymacs.saw_list
+        if len(wl) <= 1:
+            return
+        index = {"previous": -1, "next": 1}[direction]
+        wl = wl[index:] + wl[:index]
+        fakeymacs.saw_list = wl
+        popWindow(wl[0])()
+    keymap.delayedCall(_switch, 0)
+
+# Command(=Alt)+@ で次ウィンドウ、 Command+Shift+@ で前ウィンドウ。
+# JIS キーボードの @ は VK_OEM_3 = (192) (US 配列なら ` バッククォートキー)。
+# もし反応しなければ @ キーの実際の VK を内部ログで確認して差し替える。
+define_key(keymap_global, "A-(192)",   lambda: switch_same_app_window("next"))
+define_key(keymap_global, "A-S-(192)", lambda: switch_same_app_window("previous"))
+
 # ============================================================
 # Chrome 専用
 # ============================================================
