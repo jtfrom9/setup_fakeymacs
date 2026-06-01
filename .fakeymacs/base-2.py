@@ -166,6 +166,7 @@ keymap_unity["C-b"]   = "C-b"      # Build And Run (emacs の backward-char 化�
 # ついでに Mac 風 (Alt=Cmd) で同じビルド系を打てるよう、 Alt 系を Ctrl 系へエイリアス。
 keymap_unity["A-b"]   = "C-b"      # Alt-B       → Ctrl-B       (Build And Run)
 keymap_unity["S-A-b"] = "C-S-b"    # Alt-Shift-B → Ctrl-Shift-B (Build / Build Settings)
+keymap_unity["A-r"]   = "C-r"      # Alt-R       → Ctrl-R
 
 # ============================================================
 # Emacs モード (keymap_emacs)
