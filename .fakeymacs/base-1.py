@@ -8,3 +8,13 @@ fc.window_switching_key = []
 
 # Emacs キーマップでの C-j (newline_and_indent) を無効化、 アプリに pass-through する
 fc.skip_mapping_key.setdefault("keymap_emacs", []).append("C-j")
+
+# VSCode は Emacs プラグイン emacs-mcx を「VSCode の Emacs 層」として全面採用するため、
+# fakeymacs の emacs エミュレーション対象から外す。 両方を有効にすると、 fakeymacs が
+# Emacs コマンドを Windows ショートカットに変換 (cut=C-x, copy=C-c, isearch=C-f 等) して
+# 送るのを emacs-mcx が prefix / forward-char として奪い返し、 C-w でカットできない・
+# C-s が 2 度押し等の衝突が出るため。 emacs-mcx に一本化して根絶する。
+# ※ not_emacs_target は section-base-1 と section-base-2 の間で正規表現化されるので、
+#   必ず base-1 で append すること (base-2 だと変換後で手遅れになり効かない)。
+# fakeymacs 独自キー (C-u→PageUp 等) は base-2.py の VSCode 専用 window keymap で補う。
+fc.not_emacs_target += ["Code.exe"]

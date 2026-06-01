@@ -137,30 +137,22 @@ keymap_wt = keymap.defineWindowKeymap(exe_name="WindowsTerminal.exe")
 keymap_wt["C-h"] = "Back"
 
 # ============================================================
+# VSCode 専用 (Code.exe)
+# ============================================================
+# VSCode は Emacs 操作を emacs-mcx に一本化し、 fakeymacs の emacs 対象から外している
+# (base-1.py)。 そのため keymap_emacs の fakeymacs 独自キーは VSCode では効かない。
+# 必要なものだけ、 ここ (window keymap) で生キー変換として補う。 window keymap は
+# emacs 対象かどうかに関係なく効くので、 keyhac が先に捕まえて変換し emacs-mcx へ渡る。
+# (独自キーを足したいときはこの keymap_vscode に追記する)
+keymap_vscode = keymap.defineWindowKeymap(exe_name="Code.exe")
+keymap_vscode["C-u"] = "PageUp"    # fakeymacs と同じく C-u を PageUp に (emacs-mcx の universal-arg を上書き)
+
+# Mac の ⌘⇧M / ⌘⇧E / ⌘⇧X (⌘=Alt) を Windows VSCode の対応ショートカットに。
+keymap_vscode["S-A-m"] = "C-S-m"   # 問題 (Problems)
+keymap_vscode["S-A-e"] = "C-S-e"   # エクスプローラ (Explorer)
+keymap_vscode["S-A-x"] = "C-S-x"   # 拡張機能 (Extensions)
+
+# ============================================================
 # Emacs モード (keymap_emacs)
 # ============================================================
-define_key(keymap_emacs, "C-u", self_insert_command("PageUp"))
-
-# --- VSCode ハイブリッド: 検索/キャンセル系だけ emacs-mcx に委譲 ---
-# VSCode を fakeymacs の emacs 対象に残したまま (C-u 等の fakeymacs キーは効かせる)、
-# C-s/C-r (isearch) と C-g (keyboard-quit / isearch-abort) だけは fakeymacs に握らせず、
-# 生キーを VSCode の Emacs プラグイン (emacs-mcx) へ素通しして、 emacs-mcx のネイティブ
-# isearch を使う。
-# 理由:
-#  - fakeymacs の C-s(isearch_forward) は実装上 "C-f を送る" が、 emacs-mcx は C-f を
-#    forward-char に再解釈するため衝突する (C-s を 2 回押さないと検索に入らない症状の原因)。
-#  - emacs-mcx の C-g は isearchAbort で isearch を本家どおりリセットするが、 fakeymacs の
-#    C-g は Esc 送出で、 emacs-mcx は isearch 中 (findInputFocussed) の Escape に何も割り
-#    当てていない → VSCode 既定の closeFindWidget になり綺麗にリセットされない。 よって
-#    C-g も生キーで渡す必要がある。
-# 他アプリ (Chrome/Word 等) では checkWindow 分岐の else 側で従来の fakeymacs 挙動が動く。
-def _vscode_raw_or(key, func):
-    def _command():
-        if checkWindow("Code.exe"):
-            self_insert_command(key)()
-        else:
-            func()
-    return _command
-define_key(keymap_emacs, "C-s", reset("ucm", _vscode_raw_or("C-s", isearch_forward)))
-define_key(keymap_emacs, "C-r", reset("ucm", _vscode_raw_or("C-r", isearch_backward)))
-define_key(keymap_emacs, "C-g", reset("scm", _vscode_raw_or("C-g", keyboard_quit)))
+define_key(keymap_emacs, "C-u", self_insert_command("PageUp"))   # 他アプリ用 (VSCode は下の専用 keymap)
