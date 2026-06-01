@@ -109,6 +109,8 @@ keymap_chrome["A-r"]   = "S-F5"     # reload
 keymap_chrome["S-A-n"] = "C-S-n"    # open secret tab
 keymap_chrome["A-l"]   = "C-l"      # address bar
 keymap_chrome["A-d"]   = "C-d"      # add bookmark
+keymap_chrome["A-c"]   = "C-c"      # copy  (Mac ⌘C 風)
+keymap_chrome["A-v"]   = "C-v"      # paste (Mac ⌘V 風)
 
 # ============================================================
 # Slack 専用
