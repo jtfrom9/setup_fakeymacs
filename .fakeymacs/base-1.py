@@ -18,3 +18,9 @@ fc.skip_mapping_key.setdefault("keymap_emacs", []).append("C-j")
 #   必ず base-1 で append すること (base-2 だと変換後で手遅れになり効かない)。
 # fakeymacs 独自キー (C-u→PageUp 等) は base-2.py の VSCode 専用 window keymap で補う。
 fc.not_emacs_target += ["Code.exe"]
+
+# Unity も fakeymacs の emacs エミュレーション対象から外す。 Unity を emacs 化すると
+# keymap_emacs が C-b を backward-char に変換する等、 Unity 本来のショートカット
+# (Build And Run の Ctrl-B 等) が軒並み奪われるため。 原則 fakeymacs に触らせず生キーを
+# 素通しし、 Mac 風 (Alt=Cmd) のエイリアスだけ base-2.py の window keymap で補う。
+fc.not_emacs_target += ["Unity.exe"]

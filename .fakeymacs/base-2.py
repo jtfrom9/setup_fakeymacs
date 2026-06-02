@@ -155,15 +155,11 @@ keymap_vscode["S-A-x"] = "C-S-x"   # 拡張機能 (Extensions)
 # ============================================================
 # Unity 専用 (Unity.exe)
 # ============================================================
-# Unity の Ctrl-B (Build And Run) が効かない原因は、 fakeymacs が Unity を emacs
-# 対象として扱い、 keymap_emacs が C-b を backward-char (←) に変換してしまい、 アプリに
-# 生の Ctrl-B が届かないため。 window keymap は base-2 で定義され window_keymap_list の
-# 後方に積まれる (= keymap_emacs より後勝ち) ので、 ここで C-b を素通しに上書きすれば
-# emacs 化を打ち消せる (keymap_wt の C-h、 keymap_vscode の C-u と同じ仕掛け)。
+# Unity は emacs 対象から外している (base-1.py) ので、 Ctrl-B (Build And Run) 等の生キーは
+# そのまま Unity に届く。 fakeymacs の管理は原則行わず、 ここでは Mac 風 (Alt=Cmd) で
+# ビルド系を打てるよう Alt 系を Ctrl 系へエイリアスするだけ補う。 window keymap は emacs
+# 対象かどうかに関係なく効く (keymap_vscode と同じ仕掛け)。
 keymap_unity = keymap.defineWindowKeymap(exe_name="Unity.exe")
-keymap_unity["C-b"]   = "C-b"      # Build And Run (emacs の backward-char 化を打ち消す)
-
-# ついでに Mac 風 (Alt=Cmd) で同じビルド系を打てるよう、 Alt 系を Ctrl 系へエイリアス。
 keymap_unity["A-b"]   = "C-b"      # Alt-B       → Ctrl-B       (Build And Run)
 keymap_unity["S-A-b"] = "C-S-b"    # Alt-Shift-B → Ctrl-Shift-B (Build / Build Settings)
 keymap_unity["A-r"]   = "C-r"      # Alt-R       → Ctrl-R
