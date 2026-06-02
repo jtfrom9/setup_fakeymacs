@@ -21,6 +21,10 @@ fc.not_emacs_target += ["Code.exe"]
 
 # Unity も fakeymacs の emacs エミュレーション対象から外す。 Unity を emacs 化すると
 # keymap_emacs が C-b を backward-char に変換する等、 Unity 本来のショートカット
-# (Build And Run の Ctrl-B 等) が軒並み奪われるため。 原則 fakeymacs に触らせず生キーを
-# 素通しし、 Mac 風 (Alt=Cmd) のエイリアスだけ base-2.py の window keymap で補う。
+# (Build And Run の Ctrl-B 等) が軒並み奪われるため。
 fc.not_emacs_target += ["Unity.exe"]
+
+# Scene View の右クリック中 WASD 移動はキーの押下状態を直接扱うため、 keymap_base を
+# 経由すると連続入力が崩れる。 game_app_list は keymap_global を残しつつ keymap_base を
+# スルーするので、 Unity 本来の操作と base-2.py の Mac 風エイリアスを両立できる。
+fc.game_app_list += ["Unity.exe"]
